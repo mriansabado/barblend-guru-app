@@ -3,23 +3,38 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 
+interface Drink {
+  idDrink: string;
+  strDrink: string;
+  strDrinkThumb: string;
+  strIngredient1?: string;
+  strIngredient2?: string;
+  strIngredient3?: string;
+  [key: string]: any;
+}
+
 export default function MainUI() {
-  const [query, setQuery] = useState('');
-  const [cocktail, setCocktail] = useState(null);
-  const [suggestions, setSuggestions] = useState([]);
-  const [hasSearched, setHasSearched] = useState(false);
+  const [query, setQuery] = useState<string>('');
+  const [cocktail, setCocktail] = useState<Drink | null>(null);
+  const [suggestions, setSuggestions] = useState<Drink[]>([]);
+  const [hasSearched, setHasSearched] = useState<boolean>(false);
 
   useEffect(() => {
     fetchRandomSuggestions();
   }, []);
 
-  const fetchCocktail = async (drinkName) => {
+  const fetchCocktail = async (drinkName: string) => {
     try {
       const response = await axios.get(`https://www.thecocktaildb.com/api/json/v1/1/search.php?s=${drinkName}`);
-      const drinks = response.data.drinks;
+      const drinks: Drink[] = response.data.drinks;
       if (drinks) {
         setCocktail(drinks[0]);
-        setSuggestions(drinks.slice(1, 5)); // Get up to 4 suggested drinks
+        const relatedDrinks = drinks.slice(1, 5); // Get up to 4 related drinks
+        if (relatedDrinks.length > 0) {
+          setSuggestions(relatedDrinks);
+        } else {
+          fetchRandomSuggestions();
+        }
         setHasSearched(true);
       } else {
         setCocktail(null);
@@ -31,9 +46,21 @@ export default function MainUI() {
     }
   };
 
+  const fetchRandomCocktail = async () => {
+    try {
+      const response = await axios.get('https://www.thecocktaildb.com/api/json/v1/1/random.php');
+      const drink: Drink = response.data.drinks[0];
+      setCocktail(drink);
+      fetchRandomSuggestions();
+      setHasSearched(true);
+    } catch (error) {
+      console.error("Error fetching a random cocktail:", error);
+    }
+  };
+
   const fetchRandomSuggestions = async () => {
     try {
-      const drinks = [];
+      const drinks: Drink[] = [];
       for (let i = 0; i < 4; i++) {
         const response = await axios.get('https://www.thecocktaildb.com/api/json/v1/1/random.php');
         drinks.push(response.data.drinks[0]);
@@ -48,7 +75,7 @@ export default function MainUI() {
     fetchCocktail(query);
   };
 
-  const handleSuggestionClick = (drinkName) => {
+  const handleSuggestionClick = (drinkName: string) => {
     fetchCocktail(drinkName);
   };
 
@@ -63,27 +90,35 @@ export default function MainUI() {
     <div className="min-h-screen bg-gradient-to-r from-teal-400 via-blue-500 to-indigo-600 text-white flex flex-col items-center justify-center p-4">
       <div className="w-full max-w-md mx-auto">
         <h1 className="text-4xl font-bold mb-6 text-center">BarBlend Guru</h1>
-        <input
-          type="text"
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          placeholder="Enter a cocktail name"
-          className="w-full p-4 rounded-lg text-gray-900"
-        />
+        <div className="flex items-center">
+          <input
+            type="text"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Enter a cocktail name"
+            className="w-full p-4 rounded-lg text-gray-900"
+          />
+          {hasSearched && (
+            <button
+              onClick={handleResetClick}
+              className="ml-2 p-2 bg-red-700 rounded-lg hover:bg-red-800 transition-colors duration-300"
+            >
+              Reset
+            </button>
+          )}
+        </div>
         <button
           onClick={handleSearchClick}
           className="w-full mt-4 p-4 bg-purple-700 rounded-lg hover:bg-purple-800 transition-colors duration-300"
         >
           Search
         </button>
-        {hasSearched && (
-          <button
-            onClick={handleResetClick}
-            className="w-full mt-2 p-4 bg-red-700 rounded-lg hover:bg-red-800 transition-colors duration-300"
-          >
-            Reset to Home
-          </button>
-        )}
+        <button
+          onClick={fetchRandomCocktail}
+          className="w-full mt-2 p-4 bg-green-700 rounded-lg hover:bg-green-800 transition-colors duration-300"
+        >
+          Find a New Drink
+        </button>
       </div>
 
       {cocktail && (
