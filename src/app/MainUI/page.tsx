@@ -89,7 +89,7 @@ export default function MainUI() {
   return (
     <div className="min-h-screen bg-gradient-to-r from-teal-400 via-blue-500 to-indigo-600 text-white flex flex-col items-center justify-center p-4">
       <div className="w-full max-w-md mx-auto">
-        <h1 className="text-4xl font-bold mb-6 text-center">BarBlend Guru</h1>
+       <a href="/"><h1 className="text-4xl font-bold mb-6 text-center">BarBlend Guru</h1></a>
         <div className="flex items-center">
           <input
             type="text"
