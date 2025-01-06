@@ -96,7 +96,7 @@ export default function MainUI() {
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Enter a cocktail name"
-            className="w-full p-4 rounded-lg text-gray-900"
+            className="w-full p-4 rounded-lg"
           />
           {hasSearched && (
             <button
