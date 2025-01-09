@@ -135,7 +135,11 @@ export default function MainUI() {
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder={searchType === 'name' ? "Enter a cocktail name" : "Enter an ingredient (e.g., Vodka, Gin)"}
-              className="w-full p-4 rounded-lg pr-10"
+              className={`w-full p-4 rounded-lg pr-10 ${
+                isDarkMode 
+                  ? 'text-white bg-gray-800' 
+                  : 'text-white-900 bg-white'
+              }`}
             />
             {query && (
               <button
