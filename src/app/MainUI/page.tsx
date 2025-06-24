@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import axios from 'axios';
+import '../globals.css';
 
 interface Drink {
   idDrink: string;
@@ -17,7 +18,7 @@ export default function MainUI() {
   const [query, setQuery] = useState<string>('');
   const [cocktail, setCocktail] = useState<Drink | null>(null);
   const [hasSearched, setHasSearched] = useState<boolean>(false);
-  const [isDarkMode, setIsDarkMode] = useState<boolean>(true);
+  const [isDarkMode, setIsDarkMode] = useState<boolean>(false);
   const [searchType, setSearchType] = useState<'name' | 'ingredient'>('name');
   const [searchResults, setSearchResults] = useState<Drink[]>([]);
   const [showAllResults, setShowAllResults] = useState<boolean>(false);
@@ -112,11 +113,13 @@ export default function MainUI() {
     setCocktail(drink);
   };
 
+
+
   return (
     <div className={`min-h-screen ${
       isDarkMode 
-        ? 'bg-gradient-to-br from-zinc-800 via-stone-900 to-neutral-950 text-white' 
-        : 'bg-gradient-to-br from-blue-50 via-blue-100 to-blue-200 text-gray-900'
+        ? 'bg-[linear-gradient(to_top,#1a1a2e_0%,#16213e_100%)] text-white' 
+        : 'bg-[linear-gradient(to_top,#fff1eb_0%,#ace0f9_100%)] text-gray-900'
     } flex flex-col items-center justify-center p-4`}>
       <div className="w-full max-w-md mx-auto">
         <div className="flex items-center justify-between mb-6">
