@@ -133,7 +133,7 @@ export default function MainUI() {
       {/* Theme Toggle - Fixed Position */}
       <button
         onClick={toggleTheme}
-        className={`fixed top-8 right-8 p-4 rounded-full text-2xl transition-all duration-300 hover:scale-110 z-50 ${
+        className={`fixed top-4 right-4 sm:top-8 sm:right-8 p-3 sm:p-4 rounded-full text-xl sm:text-2xl transition-all duration-300 hover:scale-110 z-50 ${
           isDarkMode 
             ? 'bg-gradient-to-r from-yellow-400 to-orange-400 hover:from-yellow-500 hover:to-orange-500' 
             : 'bg-gradient-to-r from-indigo-400 to-purple-400 hover:from-indigo-500 hover:to-purple-500'
@@ -171,10 +171,10 @@ export default function MainUI() {
         }`}>
           
           {/* Search Type Toggle */}
-          <div className="flex space-x-4 mb-8">
+          <div className="flex flex-col sm:flex-row gap-4 mb-8">
             <button
               onClick={() => setSearchType('name')}
-              className={`flex-1 py-4 px-6 rounded-2xl text-lg font-bold transition-all duration-300 transform hover:scale-105 ${
+              className={`flex-1 py-4 px-4 sm:px-6 rounded-2xl text-base sm:text-lg font-bold transition-all duration-300 transform hover:scale-105 whitespace-nowrap ${
                 searchType === 'name'
                   ? (isDarkMode 
                       ? 'bg-gradient-to-r from-pink-500 to-purple-500 text-white shadow-lg' 
@@ -188,7 +188,7 @@ export default function MainUI() {
             </button>
             <button
               onClick={() => setSearchType('ingredient')}
-              className={`flex-1 py-4 px-6 rounded-2xl text-lg font-bold transition-all duration-300 transform hover:scale-105 ${
+              className={`flex-1 py-4 px-4 sm:px-6 rounded-2xl text-base sm:text-lg font-bold transition-all duration-300 transform hover:scale-105 whitespace-nowrap ${
                 searchType === 'ingredient'
                   ? (isDarkMode 
                       ? 'bg-gradient-to-r from-cyan-500 to-blue-500 text-white shadow-lg' 
