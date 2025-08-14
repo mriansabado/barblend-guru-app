@@ -282,102 +282,126 @@ export default function MainUI() {
             🎉 Found {searchResults.length} Cocktails!
           </h2>
           <div className="flex flex-wrap justify-center gap-8 mb-12" style={{display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: '2rem'}}>
-            {Array.isArray(searchResults) && searchResults.slice(0, showAllResults ? undefined : 9).map(drink => (
+            {Array.isArray(searchResults) && searchResults.slice(0, showAllResults ? undefined : 9).map((drink, index) => (
               <div
                 key={drink.idDrink}
                 className={`group relative overflow-hidden w-full sm:w-80 lg:w-96 ${
                   isDarkMode 
-                    ? 'bg-gradient-to-br from-gray-800/95 via-gray-700/95 to-gray-800/95 text-white border border-purple-500/40' 
-                    : 'bg-gradient-to-br from-white/95 via-pink-50/95 to-white/95 text-gray-900 border border-pink-200/60'
-                } rounded-3xl shadow-2xl cursor-pointer transition-all duration-500 transform hover:scale-105 hover:shadow-3xl backdrop-blur-sm hover:border-opacity-80`}
+                    ? 'bg-gradient-to-br from-slate-800/95 via-purple-900/95 to-indigo-900/95 text-white border-2 border-purple-400/50' 
+                    : 'bg-gradient-to-br from-rose-50/95 via-pink-100/95 to-purple-100/95 text-gray-900 border-2 border-pink-300/60'
+                } rounded-3xl shadow-2xl cursor-pointer transition-all duration-500 transform hover:scale-105 hover:shadow-3xl backdrop-blur-sm hover:border-opacity-100`}
                 style={{minWidth: '300px', maxWidth: '400px'}}
                 onClick={() => handleDrinkClick(drink)}
               >
-                {/* Subtle Floral Background Pattern */}
-                <div className="absolute inset-0 opacity-15 pointer-events-none overflow-hidden">
-                  <div className="absolute -top-4 -left-4 w-32 h-32 opacity-40">
-                    <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <path d="M50 20C55 20 60 25 60 30C60 35 55 40 50 40C45 40 40 35 40 30C40 25 45 20 50 20Z" fill="currentColor"/>
-                      <path d="M70 40C75 40 80 45 80 50C80 55 75 60 70 60C65 60 60 55 60 50C60 45 65 40 70 40Z" fill="currentColor"/>
-                      <path d="M30 40C35 40 40 45 40 50C40 55 35 60 30 60C25 60 20 55 20 50C20 45 25 40 30 40Z" fill="currentColor"/>
-                      <path d="M50 60C55 60 60 65 60 70C60 75 55 80 50 80C45 80 40 75 40 70C40 65 45 60 50 60Z" fill="currentColor"/>
-                      <path d="M70 60C75 60 80 65 80 70C80 75 75 80 70 80C65 80 60 75 60 70C60 65 65 60 70 60Z" fill="currentColor"/>
-                      <path d="M30 60C35 60 40 65 40 70C40 75 35 80 30 80C25 80 20 75 20 70C20 65 25 60 30 60Z" fill="currentColor"/>
-                    </svg>
+                {/* Fun Background Pattern with Drink Icons */}
+                <div className="absolute inset-0 opacity-10 pointer-events-none overflow-hidden">
+                  <div className="absolute -top-4 -left-4 w-32 h-32 opacity-30 text-purple-400">
+                    🍸
                   </div>
-                  <div className="absolute -bottom-4 -right-4 w-24 h-24 opacity-30">
-                    <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <path d="M50 10C60 10 70 20 70 30C70 40 60 50 50 50C40 50 30 40 30 30C30 20 40 10 50 10Z" fill="currentColor"/>
-                      <path d="M80 50C90 50 100 60 100 70C100 80 90 90 80 90C70 90 60 80 60 70C60 60 70 50 80 50Z" fill="currentColor"/>
-                      <path d="M20 50C30 50 40 60 40 70C40 80 30 90 20 90C10 90 0 80 0 70C0 60 10 50 20 50Z" fill="currentColor"/>
-                      <path d="M50 70C60 70 70 80 70 90C70 100 60 110 50 110C40 110 30 100 30 90C30 80 40 70 50 70Z" fill="currentColor"/>
-                    </svg>
+                  <div className="absolute -bottom-4 -right-4 w-24 h-24 opacity-25 text-pink-400">
+                    🥃
                   </div>
-                  <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-20 h-20 opacity-25">
-                    <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <circle cx="50" cy="50" r="8" fill="currentColor"/>
-                      <circle cx="50" cy="20" r="6" fill="currentColor"/>
-                      <circle cx="80" cy="50" r="6" fill="currentColor"/>
-                      <circle cx="50" cy="80" r="6" fill="currentColor"/>
-                      <circle cx="20" cy="50" r="6" fill="currentColor"/>
-                    </svg>
+                  <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-20 h-20 opacity-20 text-cyan-400">
+                    🍹
+                  </div>
+                  <div className="absolute top-8 right-8 w-16 h-16 opacity-20 text-yellow-400">
+                    ✨
                   </div>
                 </div>
                 
-                {/* Card Image Container */}
+                {/* Card Image Container with Enhanced Styling */}
                 <div className="relative overflow-hidden rounded-t-3xl">
                   <img 
                     src={drink.strDrinkThumb} 
                     alt={drink.strDrink} 
                     className="w-full h-56 object-cover transition-transform duration-700 group-hover:scale-110" 
                   />
-                  {/* Gradient Overlay */}
+                  
+                  {/* Enhanced Gradient Overlay */}
                   <div className={`absolute inset-0 bg-gradient-to-t ${
                     isDarkMode 
-                      ? 'from-gray-900/60 via-transparent to-transparent' 
-                      : 'from-white/60 via-transparent to-transparent'
+                      ? 'from-purple-900/70 via-purple-600/20 to-transparent' 
+                      : 'from-pink-900/70 via-pink-600/20 to-transparent'
                   } opacity-0 group-hover:opacity-100 transition-opacity duration-500`} />
                   
-                  {/* Hover Effect Badge */}
-                  <div className={`absolute top-4 right-4 px-3 py-1 rounded-full text-xs font-bold ${
+                  {/* Fun Hover Effect Badge */}
+                  <div className={`absolute top-4 right-4 px-4 py-2 rounded-full text-sm font-bold ${
                     isDarkMode 
-                      ? 'bg-purple-500/90 text-white' 
-                      : 'bg-pink-500/90 text-white'
-                  } opacity-0 group-hover:opacity-100 transition-all duration-500 transform translate-y-2 group-hover:translate-y-0`}>
-                    Click to View
+                      ? 'bg-gradient-to-r from-pink-500 to-purple-600 text-white shadow-lg' 
+                      : 'bg-gradient-to-r from-purple-500 to-pink-600 text-white shadow-lg'
+                  } opacity-0 group-hover:opacity-100 transition-all duration-500 transform translate-y-2 group-hover:translate-y-0 border-2 border-white/20`}>
+                    🎯 Click to View
+                  </div>
+                  
+                  {/* Drink Type Indicator */}
+                  <div className={`absolute top-4 left-4 px-3 py-1 rounded-full text-xs font-bold ${
+                    isDarkMode 
+                      ? 'bg-gradient-to-r from-cyan-500 to-blue-600 text-white' 
+                      : 'bg-gradient-to-r from-blue-500 to-cyan-600 text-white'
+                  } shadow-lg border border-white/20`}>
+                    🍹 Cocktail
                   </div>
                 </div>
                 
-                {/* Card Content */}
+                {/* Enhanced Card Content */}
                 <div className="p-6 relative z-10">
-                  <h3 className="text-xl font-bold text-center mb-3 group-hover:text-purple-400 transition-colors duration-300">
+                  {/* Drink Name with Enhanced Typography */}
+                  <h3 className="text-2xl font-black text-center mb-4 group-hover:text-transparent group-hover:bg-clip-text transition-all duration-500 ${
+                    isDarkMode 
+                      ? 'group-hover:bg-gradient-to-r from-pink-400 via-purple-400 to-cyan-400' 
+                      : 'group-hover:bg-gradient-to-r from-purple-500 via-pink-500 to-cyan-500'
+                  }">
                     {drink.strDrink}
                   </h3>
                   
-                  {/* Ingredients Preview */}
-                  <div className="space-y-2">
+                  {/* Fun Ingredients Preview with Enhanced Styling */}
+                  <div className="space-y-3 mb-4">
+                    <div className="text-sm font-semibold text-center mb-3 opacity-80">
+                      🎨 Key Ingredients:
+                    </div>
                     {[drink.strIngredient1, drink.strIngredient2, drink.strIngredient3].filter(Boolean).slice(0, 3).map((ingredient, index) => (
-                      <div key={index} className="flex items-center text-sm opacity-80">
-                        <div className={`mr-3 w-2 h-2 rounded-full ${
-                          index === 0 ? 'bg-gradient-to-r from-pink-400 to-purple-400' :
-                          index === 1 ? 'bg-gradient-to-r from-cyan-400 to-blue-400' :
-                          'bg-gradient-to-r from-yellow-400 to-orange-400'
+                      <div key={index} className="flex items-center text-sm opacity-90 group-hover:opacity-100 transition-opacity duration-300">
+                        <div className={`mr-3 w-3 h-3 rounded-full shadow-sm ${
+                          index === 0 ? 'bg-gradient-to-r from-pink-400 to-rose-500' :
+                          index === 1 ? 'bg-gradient-to-r from-cyan-400 to-blue-500' :
+                          'bg-gradient-to-r from-yellow-400 to-orange-500'
                         }`}></div>
-                        <span className="truncate">{ingredient}</span>
+                        <span className="truncate font-medium">{ingredient}</span>
                       </div>
                     ))}
                     {[drink.strIngredient1, drink.strIngredient2, drink.strIngredient3].filter(Boolean).length > 3 && (
-                      <div className="text-xs opacity-60 text-center pt-2">
-                        +{Object.keys(drink).filter(key => key.startsWith('strIngredient') && drink[key]).length - 3} more ingredients
+                      <div className="text-xs opacity-70 text-center pt-2 font-medium">
+                        ✨ +{Object.keys(drink).filter(key => key.startsWith('strIngredient') && drink[key]).length - 3} more ingredients
                       </div>
                     )}
                   </div>
                   
-                  {/* Hover Effect Line */}
-                  <div className={`absolute bottom-0 left-0 w-0 h-1 ${
-                    isDarkMode ? 'bg-gradient-to-r from-purple-400 to-pink-400' : 'bg-gradient-to-r from-pink-400 to-purple-400'
-                  } transition-all duration-500 group-hover:w-full rounded-b-3xl`} />
+                  {/* Fun Action Indicator */}
+                  <div className="text-center">
+                    <div className={`inline-flex items-center px-4 py-2 rounded-full text-xs font-bold ${
+                      isDarkMode 
+                        ? 'bg-gradient-to-r from-purple-500/20 to-pink-500/20 text-purple-300 border border-purple-400/30' 
+                        : 'bg-gradient-to-r from-pink-500/20 to-purple-500/20 text-pink-600 border border-pink-400/30'
+                    } transition-all duration-300 group-hover:scale-105`}>
+                      <span className="mr-2">🎯</span>
+                      Tap to see full recipe!
+                    </div>
+                  </div>
+                  
+                  {/* Enhanced Hover Effect Line */}
+                  <div className={`absolute bottom-0 left-0 w-0 h-2 ${
+                    isDarkMode 
+                      ? 'bg-gradient-to-r from-pink-400 via-purple-400 to-cyan-400' 
+                      : 'bg-gradient-to-r from-purple-400 via-pink-400 to-cyan-400'
+                  } transition-all duration-700 group-hover:w-full rounded-b-3xl shadow-lg`} />
                 </div>
+                
+                {/* Fun Corner Accent */}
+                <div className={`absolute top-0 right-0 w-0 h-0 border-l-[60px] border-l-transparent border-t-[60px] ${
+                  isDarkMode 
+                    ? 'border-t-purple-500/30' 
+                    : 'border-t-pink-400/30'
+                } opacity-0 group-hover:opacity-100 transition-all duration-500`}></div>
               </div>
             ))}
           </div>
