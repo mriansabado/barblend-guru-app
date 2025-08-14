@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import '../globals.css';
 
@@ -22,6 +22,9 @@ export default function MainUI() {
   const [searchType, setSearchType] = useState<'name' | 'ingredient'>('name');
   const [searchResults, setSearchResults] = useState<Drink[]>([]);
   const [showAllResults, setShowAllResults] = useState<boolean>(false);
+
+  const searchResultsRef = useRef<HTMLDivElement>(null);
+  const cocktailDetailsRef = useRef<HTMLDivElement>(null);
 
   const fetchCocktail = async (drinkName: string) => {
     try {
@@ -122,6 +125,14 @@ export default function MainUI() {
   const handleDrinkClick = (drink: Drink) => {
     setCocktail(drink);
   };
+
+  useEffect(() => {
+    if (searchResultsRef.current && hasSearched && searchResults.length > 0 && !cocktail) {
+      searchResultsRef.current.scrollIntoView({ behavior: 'smooth' });
+    } else if (cocktailDetailsRef.current && hasSearched && cocktail) {
+      cocktailDetailsRef.current.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [hasSearched, searchResults.length, cocktail]);
 
   return (
     <div className={`min-h-screen ${
@@ -264,7 +275,7 @@ export default function MainUI() {
 
       {/* Search Results */}
       {searchResults.length > 0 && !cocktail && (
-        <div className="w-full max-w-7xl mx-auto px-4">
+        <div ref={searchResultsRef} className="w-full max-w-7xl mx-auto px-4">
           <h2 className={`text-4xl font-bold text-center mb-12 ${
             isDarkMode ? 'text-purple-200' : 'text-gray-800'
           }`}>
@@ -389,7 +400,7 @@ export default function MainUI() {
 
       {/* Cocktail Details */}
       {cocktail && (
-        <div className={`w-full max-w-5xl mx-auto p-8 rounded-3xl shadow-2xl ${
+        <div ref={cocktailDetailsRef} className={`w-full max-w-5xl mx-auto p-8 rounded-3xl shadow-2xl ${
           isDarkMode 
             ? 'bg-gradient-to-br from-gray-800/90 to-gray-900/90 text-white border border-purple-500/30' 
             : 'bg-gradient-to-br from-white/90 to-pink-50/90 text-gray-900 border border-pink-200'
