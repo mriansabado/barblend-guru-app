@@ -1,10 +1,5 @@
-import MainUI from "./MainUI/page";
-
+import BarBlendApp from "@/components/BarBlendApp";
 
 export default function Home() {
-  return (
-    <>
-     <MainUI />
-    </>
-  );
+  return <BarBlendApp />;
 }

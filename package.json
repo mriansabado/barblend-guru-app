@@ -11,16 +11,21 @@
     "deploy": "gh-pages -d build"
   },
   "dependencies": {
+    "@react-three/drei": "^9.114.3",
+    "@react-three/fiber": "^8.17.10",
     "axios": "^1.7.2",
+    "framer-motion": "^13.2.0",
+    "lucide-react": "^1.45.0",
     "next": "14.2.4",
     "react": "^18",
-    "react-dom": "^18"
+    "react-dom": "^18",
+    "three": "^0.169.0"
   },
   "devDependencies": {
     "@types/node": "^20",
     "@types/react": "^18",
     "@types/react-dom": "^18",
-    "daisyui": "^4.12.10",
+    "@types/three": "^0.186.0",
     "eslint": "^8",
     "eslint-config-next": "14.2.4",
     "gh-pages": "^6.3.0",
