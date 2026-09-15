@@ -1,6 +1,6 @@
 "use client";
 
-import { Drink, getDrinkIngredients } from "@/lib/cocktail-api";
+import { Drink, getDrinkIngredients, instructionTeaser } from "@/lib/cocktail-api";
 import { motion } from "framer-motion";
 import { ArrowUpRight } from "lucide-react";
 
@@ -9,7 +9,10 @@ interface ResultsGridProps {
   showAll: boolean;
   onShowAll: () => void;
   onSelect: (drink: Drink) => void;
+  headline?: string | null;
 }
+
+const INITIAL_VISIBLE = 12;
 
 const cardColors = [
   "from-bar-coral/20 to-transparent",
@@ -18,8 +21,14 @@ const cardColors = [
   "from-bar-pink/20 to-transparent",
 ];
 
-export function ResultsGrid({ drinks, showAll, onShowAll, onSelect }: ResultsGridProps) {
-  const visible = showAll ? drinks : drinks.slice(0, 9);
+export function ResultsGrid({
+  drinks,
+  showAll,
+  onShowAll,
+  onSelect,
+  headline,
+}: ResultsGridProps) {
+  const visible = showAll ? drinks : drinks.slice(0, INITIAL_VISIBLE);
 
   return (
     <section className="w-full max-w-6xl">
@@ -28,7 +37,7 @@ export function ResultsGrid({ drinks, showAll, onShowAll, onSelect }: ResultsGri
         animate={{ opacity: 1, y: 0 }}
         className="font-display mb-8 text-center text-3xl font-bold text-white sm:text-4xl"
       >
-        {drinks.length} drinks ready to mix
+        {headline ?? `${drinks.length} drinks ready to mix`}
       </motion.h2>
       <div
         className="grid gap-6"
@@ -36,6 +45,7 @@ export function ResultsGrid({ drinks, showAll, onShowAll, onSelect }: ResultsGri
       >
         {visible.map((drink, index) => {
           const ingredients = getDrinkIngredients(drink).slice(0, 3);
+          const teaser = instructionTeaser(drink.strInstructions);
           const tint = cardColors[index % cardColors.length];
           return (
             <motion.button
@@ -59,9 +69,17 @@ export function ResultsGrid({ drinks, showAll, onShowAll, onSelect }: ResultsGri
               </div>
               <div className="p-5">
                 <h3 className="font-display text-xl font-bold text-white">{drink.strDrink}</h3>
-                <p className="mt-2 text-sm text-bar-muted">
-                  {ingredients.join(" · ")}
-                </p>
+                {drink.strCategory && (
+                  <p className="mt-1 text-xs font-semibold uppercase tracking-wider text-bar-teal/80">
+                    {drink.strCategory}
+                  </p>
+                )}
+                <p className="mt-2 text-sm text-bar-muted">{ingredients.join(" · ")}</p>
+                {teaser && (
+                  <p className="mt-3 line-clamp-2 text-sm leading-relaxed text-white/70">
+                    {teaser}
+                  </p>
+                )}
                 <span className="mt-4 inline-flex items-center gap-1 text-sm font-bold text-bar-teal">
                   Open recipe
                   <ArrowUpRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
@@ -71,7 +89,7 @@ export function ResultsGrid({ drinks, showAll, onShowAll, onSelect }: ResultsGri
           );
         })}
       </div>
-      {drinks.length > 9 && !showAll && (
+      {drinks.length > INITIAL_VISIBLE && !showAll && (
         <div className="mt-10 text-center">
           <button
             type="button"

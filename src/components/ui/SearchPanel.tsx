@@ -2,7 +2,11 @@
 
 import { BarButton } from "@/components/ui/BarButton";
 import { WarmCard } from "@/components/ui/WarmCard";
-import { SearchType } from "@/hooks/useCocktailSearch";
+import {
+  BROWSE_LETTERS,
+  SPIRIT_CHIPS,
+  SearchType,
+} from "@/hooks/useCocktailSearch";
 import { cn } from "@/lib/cn";
 import { Dices, Search, Sparkles, X } from "lucide-react";
 
@@ -14,8 +18,13 @@ interface SearchPanelProps {
   onSearch: () => void;
   onSurprise: () => void;
   onReset: () => void;
+  onSpiritChip: (spirit: string) => void;
+  onBrowseLetter: (letter: string) => void;
+  onBrowseCategory: (category: string) => void;
+  browseCategories: string[];
   hasSearched: boolean;
   loading: boolean;
+  catalogLoading: boolean;
   error: string | null;
   onDismissError: () => void;
 }
@@ -29,11 +38,18 @@ export function SearchPanel(props: SearchPanelProps) {
     onSearch,
     onSurprise,
     onReset,
+    onSpiritChip,
+    onBrowseLetter,
+    onBrowseCategory,
+    browseCategories,
     hasSearched,
     loading,
+    catalogLoading,
     error,
     onDismissError,
   } = props;
+
+  const busy = loading || catalogLoading;
 
   return (
     <WarmCard className="p-6 sm:p-8">
@@ -77,12 +93,18 @@ export function SearchPanel(props: SearchPanelProps) {
         </div>
       )}
 
+      {catalogLoading && (
+        <p className="mb-4 text-center text-sm font-semibold text-bar-teal">
+          Stocking the bar… one moment while we load the full menu.
+        </p>
+      )}
+
       <div className="relative mb-5">
         <input
           type="text"
           value={query}
           onChange={(e) => onQueryChange(e.target.value)}
-          onKeyDown={(e) => e.key === "Enter" && onSearch()}
+          onKeyDown={(e) => e.key === "Enter" && !busy && onSearch()}
           placeholder={
             searchType === "name" ? "Try Margarita or Negroni…" : "Vodka, lime, mint…"
           }
@@ -100,12 +122,33 @@ export function SearchPanel(props: SearchPanelProps) {
         )}
       </div>
 
+      {searchType === "ingredient" && (
+        <div className="mb-5">
+          <p className="mb-2 text-xs font-bold uppercase tracking-wider text-white/50">
+            Quick spirits
+          </p>
+          <div className="flex flex-wrap gap-2">
+            {SPIRIT_CHIPS.map((spirit) => (
+              <button
+                key={spirit}
+                type="button"
+                disabled={busy}
+                onClick={() => onSpiritChip(spirit)}
+                className="rounded-xl bg-white/10 px-3 py-1.5 text-sm font-semibold text-white transition hover:bg-bar-coral/40 disabled:opacity-50"
+              >
+                {spirit}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
       <div className="flex flex-col gap-3">
-        <BarButton type="button" onClick={onSearch} loading={loading}>
+        <BarButton type="button" onClick={onSearch} loading={busy}>
           <Search className="h-5 w-5" />
           Find my drink
         </BarButton>
-        <BarButton type="button" variant="teal" onClick={onSurprise} loading={loading}>
+        <BarButton type="button" variant="teal" onClick={onSurprise} loading={busy}>
           <Dices className="h-5 w-5" />
           Shake it up — surprise me
         </BarButton>
@@ -114,6 +157,39 @@ export function SearchPanel(props: SearchPanelProps) {
             Start fresh
           </BarButton>
         )}
+      </div>
+
+      <div className="mt-6 border-t border-white/10 pt-5">
+        <p className="mb-3 text-xs font-bold uppercase tracking-wider text-white/50">
+          Browse the bar
+        </p>
+        <div className="mb-3 flex flex-wrap gap-1.5">
+          {BROWSE_LETTERS.map((letter) => (
+            <button
+              key={letter}
+              type="button"
+              disabled={busy}
+              onClick={() => onBrowseLetter(letter)}
+              className="flex h-8 w-8 items-center justify-center rounded-lg bg-black/25 text-xs font-bold text-bar-muted transition hover:bg-bar-teal/30 hover:text-white disabled:opacity-50"
+              aria-label={`Browse drinks starting with ${letter}`}
+            >
+              {letter}
+            </button>
+          ))}
+        </div>
+        <div className="flex flex-wrap gap-2">
+          {browseCategories.map((category) => (
+            <button
+              key={category}
+              type="button"
+              disabled={busy}
+              onClick={() => onBrowseCategory(category)}
+              className="rounded-xl border border-white/15 bg-transparent px-3 py-1.5 text-xs font-semibold text-bar-muted transition hover:border-bar-mango/50 hover:text-bar-mango disabled:opacity-50"
+            >
+              {category}
+            </button>
+          ))}
+        </div>
       </div>
     </WarmCard>
   );

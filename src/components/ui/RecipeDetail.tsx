@@ -2,7 +2,7 @@
 
 import { BarButton } from "@/components/ui/BarButton";
 import { WarmCard } from "@/components/ui/WarmCard";
-import { Drink, getDrinkIngredients } from "@/lib/cocktail-api";
+import { Drink, getDrinkIngredientLines } from "@/lib/cocktail-api";
 import { motion } from "framer-motion";
 import { ArrowLeft, GlassWater } from "lucide-react";
 
@@ -13,7 +13,7 @@ interface RecipeDetailProps {
 }
 
 export function RecipeDetail({ drink, showBack, onBack }: RecipeDetailProps) {
-  const ingredients = getDrinkIngredients(drink);
+  const lines = getDrinkIngredientLines(drink);
 
   return (
     <motion.div
@@ -36,6 +36,11 @@ export function RecipeDetail({ drink, showBack, onBack }: RecipeDetailProps) {
         <h2 className="font-display text-center text-4xl font-bold text-white sm:text-5xl">
           {drink.strDrink}
         </h2>
+        {(drink.strCategory || drink.strGlass) && (
+          <p className="mt-3 text-center text-sm text-bar-muted">
+            {[drink.strCategory, drink.strGlass].filter(Boolean).join(" · ")}
+          </p>
+        )}
         <div className="mt-10 flex flex-col gap-10 lg:flex-row">
           <motion.img
             initial={{ rotate: -2 }}
@@ -47,11 +52,11 @@ export function RecipeDetail({ drink, showBack, onBack }: RecipeDetailProps) {
           <div className="flex-1 space-y-8">
             <div>
               <h3 className="font-display mb-4 text-2xl font-bold text-bar-mango">Grab this</h3>
-              <ul className="flex flex-wrap gap-2">
-                {ingredients.map((ing, i) => (
+              <ul className="space-y-2">
+                {lines.map((line, i) => (
                   <li
-                    key={ing}
-                    className="rounded-2xl px-4 py-2 text-sm font-semibold text-bar-plum"
+                    key={`${line.ingredient}-${i}`}
+                    className="flex items-baseline gap-3 rounded-2xl px-4 py-2.5 text-sm font-semibold text-bar-plum"
                     style={{
                       background:
                         i % 3 === 0
@@ -61,7 +66,10 @@ export function RecipeDetail({ drink, showBack, onBack }: RecipeDetailProps) {
                             : "#f472b6",
                     }}
                   >
-                    {ing}
+                    {line.measure && (
+                      <span className="shrink-0 font-bold opacity-80">{line.measure}</span>
+                    )}
+                    <span>{line.ingredient}</span>
                   </li>
                 ))}
               </ul>

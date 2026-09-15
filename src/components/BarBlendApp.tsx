@@ -54,8 +54,13 @@ export default function BarBlendApp() {
             onSearch={search.runSearch}
             onSurprise={search.runSurprise}
             onReset={search.reset}
+            onSpiritChip={search.runSpiritChip}
+            onBrowseLetter={search.runBrowseLetter}
+            onBrowseCategory={search.runBrowseCategory}
+            browseCategories={search.browseCategories}
             hasSearched={search.hasSearched}
             loading={search.loading}
+            catalogLoading={search.catalogLoading}
             error={search.error}
             onDismissError={search.clearError}
           />
@@ -69,6 +74,7 @@ export default function BarBlendApp() {
               showAll={search.showAllResults}
               onShowAll={() => search.setShowAllResults(true)}
               onSelect={search.selectDrink}
+              headline={search.resultsHeadline}
             />
           )}
           {showDetail && search.selectedDrink && (

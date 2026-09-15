@@ -3,8 +3,8 @@
 @tailwind utilities;
 
 :root {
-  --bg-plum: #1f1535;
-  --bg-wine: #3d1f4a;
+  --bg-plum: #452b66;
+  --bg-wine: #6b3a80;
   --accent-coral: #ff6b6b;
   --accent-mango: #ffb347;
   --accent-teal: #2dd4bf;
@@ -31,21 +31,21 @@
     @apply rounded-3xl backdrop-blur-2xl;
     background: linear-gradient(
       155deg,
-      rgba(31, 21, 53, 0.82) 0%,
-      rgba(61, 31, 74, 0.78) 45%,
-      rgba(42, 22, 56, 0.85) 100%
+      rgba(69, 43, 102, 0.68) 0%,
+      rgba(107, 58, 128, 0.64) 45%,
+      rgba(85, 48, 112, 0.72) 100%
     );
     border: 1px solid rgba(255, 255, 255, 0.22);
     box-shadow:
       inset 0 1px 0 rgba(255, 255, 255, 0.15),
-      0 24px 60px rgba(0, 0, 0, 0.45);
+      0 24px 60px rgba(0, 0, 0, 0.24);
   }
 
   .drink-tint {
     background:
-      radial-gradient(ellipse 100% 80% at 50% 30%, rgba(255, 107, 107, 0.12), transparent 60%),
-      radial-gradient(ellipse 90% 70% at 80% 70%, rgba(255, 179, 71, 0.1), transparent 55%),
-      radial-gradient(ellipse 80% 60% at 20% 80%, rgba(45, 212, 191, 0.08), transparent 50%);
+      radial-gradient(ellipse 100% 80% at 50% 30%, rgba(255, 107, 107, 0.24), transparent 60%),
+      radial-gradient(ellipse 90% 70% at 80% 70%, rgba(255, 179, 71, 0.2), transparent 55%),
+      radial-gradient(ellipse 80% 60% at 20% 80%, rgba(45, 212, 191, 0.16), transparent 50%);
     mix-blend-mode: screen;
     pointer-events: none;
   }
@@ -53,19 +53,19 @@
   .readability-veil {
     background: linear-gradient(
       180deg,
-      rgba(31, 21, 53, 0.35) 0%,
-      rgba(31, 21, 53, 0.55) 35%,
-      rgba(31, 21, 53, 0.5) 100%
+      rgba(69, 43, 102, 0.12) 0%,
+      rgba(69, 43, 102, 0.2) 35%,
+      rgba(69, 43, 102, 0.16) 100%
     );
     pointer-events: none;
   }
 
   .bg-party {
     background:
-      radial-gradient(ellipse 80% 50% at 20% 10%, rgba(255, 107, 107, 0.45), transparent 55%),
-      radial-gradient(ellipse 60% 40% at 85% 20%, rgba(255, 179, 71, 0.4), transparent 50%),
-      radial-gradient(ellipse 70% 50% at 50% 100%, rgba(45, 212, 191, 0.25), transparent 55%),
-      linear-gradient(165deg, var(--bg-plum) 0%, var(--bg-wine) 45%, #2a1638 100%);
+      radial-gradient(ellipse 80% 50% at 20% 10%, rgba(255, 107, 107, 0.58), transparent 55%),
+      radial-gradient(ellipse 60% 40% at 85% 20%, rgba(255, 179, 71, 0.52), transparent 50%),
+      radial-gradient(ellipse 70% 50% at 50% 100%, rgba(45, 212, 191, 0.36), transparent 55%),
+      linear-gradient(165deg, var(--bg-plum) 0%, var(--bg-wine) 45%, #553070 100%);
   }
 }
 
