@@ -386,13 +386,13 @@ export function FunBarScene({ reducedMotion, surprisePulse }: FunBarSceneProps) 
     if (!groupRef.current || reducedMotion) return;
     groupRef.current.rotation.y = THREE.MathUtils.lerp(
       groupRef.current.rotation.y,
-      pointer.current.x * 0.05,
-      0.035
+      pointer.current.x * 0.14,
+      0.05
     );
     groupRef.current.rotation.x = THREE.MathUtils.lerp(
       groupRef.current.rotation.x,
-      pointer.current.y * 0.035,
-      0.035
+      pointer.current.y * 0.09,
+      0.05
     );
   });
 
