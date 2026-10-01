@@ -26,6 +26,7 @@ interface SearchPanelProps {
   loading: boolean;
   catalogLoading: boolean;
   error: string | null;
+  rateLimited?: boolean;
   onDismissError: () => void;
 }
 
@@ -46,10 +47,11 @@ export function SearchPanel(props: SearchPanelProps) {
     loading,
     catalogLoading,
     error,
+    rateLimited = false,
     onDismissError,
   } = props;
 
-  const busy = loading || catalogLoading;
+  const busy = loading || catalogLoading || rateLimited;
 
   return (
     <WarmCard className="p-6 sm:p-8">
@@ -108,13 +110,13 @@ export function SearchPanel(props: SearchPanelProps) {
           placeholder={
             searchType === "name" ? "Try Margarita or Negroni…" : "Vodka, lime, mint…"
           }
-          className="w-full rounded-2xl border-2 border-white/25 bg-bar-plum/70 py-4 pl-4 pr-11 text-lg text-white shadow-inner placeholder:text-white/50 focus:border-bar-teal focus:bg-bar-plum/85 focus:outline-none focus:ring-2 focus:ring-bar-teal/40"
+          className="w-full rounded-2xl border-2 border-white/25 bg-bar-field py-4 pl-4 pr-11 text-lg text-bar-ink shadow-inner placeholder:text-bar-ink/45 focus:border-bar-teal focus:bg-bar-field focus:outline-none focus:ring-2 focus:ring-bar-teal/40"
         />
         {query && (
           <button
             type="button"
             onClick={() => onQueryChange("")}
-            className="absolute right-3 top-1/2 -translate-y-1/2 rounded-lg p-1 text-white/60 hover:text-white"
+            className="absolute right-3 top-1/2 -translate-y-1/2 rounded-lg p-1 text-bar-ink/55 hover:text-bar-ink"
             aria-label="Clear"
           >
             <X className="h-5 w-5" />

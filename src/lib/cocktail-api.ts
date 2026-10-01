@@ -1,9 +1,4 @@
-import axios from "axios";
-
-const BASE = "https://www.thecocktaildb.com/api/json/v1/1";
 const CATALOG_STORAGE_KEY = "barblend-drink-catalog-v1";
-const LETTERS = "abcdefghijklmnopqrstuvwxyz".split("");
-const CATALOG_CONCURRENCY = 3;
 
 export interface Drink {
   idDrink: string;
@@ -86,6 +81,16 @@ export type IngredientLine = {
   measure: string | null;
 };
 
+export class RateLimitError extends Error {
+  retryAfter: number;
+
+  constructor(message: string, retryAfter: number) {
+    super(message);
+    this.name = "RateLimitError";
+    this.retryAfter = retryAfter;
+  }
+}
+
 export function getDrinkIngredients(drink: Drink): string[] {
   return INGREDIENT_KEYS.map((key) => drink[key]).filter((value): value is string =>
     Boolean(value?.trim())
@@ -108,29 +113,59 @@ export function instructionTeaser(text: string | null | undefined, max = 90): st
   return `${cleaned.slice(0, max).trimEnd()}…`;
 }
 
+async function apiGet<T>(params: Record<string, string>): Promise<T> {
+  const query = new URLSearchParams(params);
+  const response = await fetch(`/api/cocktails?${query.toString()}`);
+  const payload = (await response.json().catch(() => ({}))) as {
+    drinks?: Drink[] | null;
+    drink?: Drink | null;
+    categories?: string[];
+    message?: string;
+    retryAfter?: number;
+    error?: string;
+  };
+
+  if (response.status === 429 || response.status === 503) {
+    throw new RateLimitError(
+      payload.message ?? "Easy there, bartender — try again in a moment.",
+      Math.max(1, payload.retryAfter ?? 30)
+    );
+  }
+
+  if (!response.ok) {
+    throw new Error(payload.error ?? "upstream");
+  }
+
+  return payload as T;
+}
+
 export async function searchByName(name: string): Promise<Drink[] | null> {
-  const response = await axios.get(`${BASE}/search.php?s=${encodeURIComponent(name)}`);
-  return response.data.drinks ?? null;
+  const payload = await apiGet<{ drinks: Drink[] | null }>({
+    type: "search",
+    q: name,
+  });
+  return payload.drinks ?? null;
 }
 
 export async function fetchRandomDrink(): Promise<Drink | null> {
-  const response = await axios.get(`${BASE}/random.php`);
-  const drinks: Drink[] | null = response.data.drinks;
-  return drinks?.[0] ?? null;
+  const payload = await apiGet<{ drink: Drink | null }>({ type: "random" });
+  return payload.drink ?? null;
 }
 
 export async function fetchDrinksByLetter(letter: string): Promise<Drink[]> {
   const normalized = letter.trim().toLowerCase().slice(0, 1);
   if (!/[a-z]/.test(normalized)) return [];
 
-  const response = await axios.get(`${BASE}/search.php?f=${normalized}`);
-  return (response.data.drinks as Drink[] | null) ?? [];
+  const payload = await apiGet<{ drinks: Drink[] }>({
+    type: "letter",
+    q: normalized,
+  });
+  return payload.drinks ?? [];
 }
 
 export async function fetchCategories(): Promise<string[]> {
-  const response = await axios.get(`${BASE}/list.php?c=list`);
-  const rows: { strCategory: string }[] | null = response.data.drinks;
-  return rows?.map((row) => row.strCategory).filter(Boolean) ?? [];
+  const payload = await apiGet<{ categories: string[] }>({ type: "categories" });
+  return payload.categories ?? [];
 }
 
 function readCachedCatalog(): Drink[] | null {
@@ -158,24 +193,11 @@ let catalogPromise: Promise<Drink[]> | null = null;
 let memoryCatalog: Drink[] | null = null;
 
 async function fetchCatalogFromApi(): Promise<Drink[]> {
-  const byId = new Map<string, Drink>();
-
-  for (let i = 0; i < LETTERS.length; i += CATALOG_CONCURRENCY) {
-    const batch = LETTERS.slice(i, i + CATALOG_CONCURRENCY);
-    const results = await Promise.all(batch.map((letter) => fetchDrinksByLetter(letter)));
-    for (const drinks of results) {
-      for (const drink of drinks) {
-        if (drink?.idDrink) byId.set(drink.idDrink, drink);
-      }
-    }
-  }
-
-  return Array.from(byId.values()).sort((a, b) =>
-    a.strDrink.localeCompare(b.strDrink, undefined, { sensitivity: "base" })
-  );
+  const payload = await apiGet<{ drinks: Drink[] }>({ type: "catalog" });
+  return payload.drinks ?? [];
 }
 
-/** Seeds once per session (~26 letter calls), then reuses memory/sessionStorage. */
+/** One catalog request per session; the server caches the 26 letter fetches. */
 export async function getDrinkCatalog(): Promise<Drink[]> {
   if (memoryCatalog?.length) return memoryCatalog;
 

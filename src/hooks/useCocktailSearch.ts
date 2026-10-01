@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import {
   Drink,
+  RateLimitError,
   browseByLetter,
   fetchCategories,
   filterCatalogByCategory,
@@ -43,11 +44,44 @@ export function useCocktailSearch() {
   const [loading, setLoading] = useState(false);
   const [catalogLoading, setCatalogLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [rateLimitedUntil, setRateLimitedUntil] = useState<number | null>(null);
   const [surprisePulse, setSurprisePulse] = useState(0);
   const [resultsHeadline, setResultsHeadline] = useState<string | null>(null);
   const [categories, setCategories] = useState<string[]>([]);
 
-  const clearError = useCallback(() => setError(null), []);
+  const clearError = useCallback(() => {
+    setError(null);
+    setRateLimitedUntil(null);
+  }, []);
+
+  const fail = useCallback((err: unknown) => {
+    if (err instanceof RateLimitError) {
+      setRateLimitedUntil(Date.now() + err.retryAfter * 1000);
+      setError(err.message);
+      return;
+    }
+    setError("Connection hiccup. Give it another shake.");
+  }, []);
+
+  useEffect(() => {
+    if (!rateLimitedUntil) return;
+    const tick = () => {
+      const wait = Math.ceil((rateLimitedUntil - Date.now()) / 1000);
+      if (wait <= 0) {
+        setRateLimitedUntil(null);
+        setError(null);
+        return;
+      }
+      setError(
+        wait < 60
+          ? `Easy there, bartender — the tap needs a short rest. Try again in ${wait}s.`
+          : `You've mixed a lot in a short stretch. Come back in about ${Math.ceil(wait / 60)} min.`
+      );
+    };
+    tick();
+    const id = window.setInterval(tick, 1000);
+    return () => window.clearInterval(id);
+  }, [rateLimitedUntil]);
 
   useEffect(() => {
     let cancelled = false;
@@ -120,14 +154,14 @@ export function useCocktailSearch() {
         }
       }
       setHasSearched(true);
-    } catch {
-      setError("Connection hiccup. Give it another shake.");
+    } catch (err) {
+      fail(err);
       setSearchResults([]);
       setCatalogLoading(false);
     } finally {
       setLoading(false);
     }
-  }, [query, searchType]);
+  }, [query, searchType, fail]);
 
   const runSpiritChip = useCallback(
     async (spirit: string) => {
@@ -150,15 +184,15 @@ export function useCocktailSearch() {
           setError("Nothing with that ingredient — try another spirit.");
         }
         setHasSearched(true);
-      } catch {
-        setError("Connection hiccup. Give it another shake.");
+      } catch (err) {
+        fail(err);
         setSearchResults([]);
         setCatalogLoading(false);
       } finally {
         setLoading(false);
       }
     },
-    []
+    [fail]
   );
 
   const runBrowseLetter = useCallback(async (letter: string) => {
@@ -178,13 +212,13 @@ export function useCocktailSearch() {
         setError(`No drinks starting with ${letter.toUpperCase()} yet.`);
       }
       setHasSearched(true);
-    } catch {
-      setError("Connection hiccup. Give it another shake.");
+    } catch (err) {
+      fail(err);
       setSearchResults([]);
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [fail]);
 
   const runBrowseCategory = useCallback(async (category: string) => {
     setLoading(true);
@@ -204,13 +238,13 @@ export function useCocktailSearch() {
         setError(`No drinks in ${category} right now.`);
       }
       setHasSearched(true);
-    } catch {
-      setError("Connection hiccup. Give it another shake.");
+    } catch (err) {
+      fail(err);
       setSearchResults([]);
     } finally {
       setLoading(false);
     }
-  }, [ensureCatalog]);
+  }, [ensureCatalog, fail]);
 
   const runSurprise = useCallback(async () => {
     setLoading(true);
@@ -229,12 +263,12 @@ export function useCocktailSearch() {
       } else {
         setError("The shaker's empty — try again in a sec.");
       }
-    } catch {
-      setError("Connection hiccup. Give it another shake.");
+    } catch (err) {
+      fail(err);
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [fail]);
 
   const reset = useCallback(() => {
     setQuery("");
@@ -243,6 +277,7 @@ export function useCocktailSearch() {
     setHasSearched(false);
     setShowAllResults(false);
     setError(null);
+    setRateLimitedUntil(null);
     setResultsHeadline(null);
   }, []);
 
@@ -269,6 +304,7 @@ export function useCocktailSearch() {
     loading,
     catalogLoading,
     error,
+    rateLimited: Boolean(rateLimitedUntil && rateLimitedUntil > Date.now()),
     clearError,
     surprisePulse,
     resultsHeadline,

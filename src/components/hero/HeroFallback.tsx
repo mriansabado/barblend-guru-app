@@ -9,19 +9,32 @@ const blobs = [
   { className: "right-[30%] top-[55%] h-24 w-24 bg-bar-pink/25", delay: "animate-float-delayed" },
 ];
 
-const floaters = [
-  { kind: "ice", left: "12%", top: "20%", delay: "0s", dur: "7s" },
-  { kind: "orange", left: "78%", top: "28%", delay: "1s", dur: "6s" },
-  { kind: "kiwi", left: "45%", top: "65%", delay: "0.5s", dur: "8s" },
-  { kind: "ice", left: "62%", top: "72%", delay: "2s", dur: "7.5s" },
-  { kind: "orange", left: "22%", top: "58%", delay: "1.5s", dur: "6.5s" },
-  { kind: "kiwi", left: "88%", top: "52%", delay: "0.8s", dur: "9s" },
-  { kind: "ice", left: "35%", top: "35%", delay: "2.2s", dur: "8s" },
-  { kind: "orange", left: "55%", top: "18%", delay: "0.3s", dur: "7s" },
-  { kind: "kiwi", left: "8%", top: "78%", delay: "1.2s", dur: "8.5s" },
-] as const;
+type Floater = {
+  kind: "ice" | "orange" | "kiwi";
+  left: string;
+  top: string;
+  delay: string;
+  dur: string;
+  mobileOnly?: boolean;
+};
 
-function FallbackGarnish({ kind }: { kind: (typeof floaters)[number]["kind"] }) {
+const floaters: Floater[] = [
+  { kind: "ice", left: "12%", top: "20%", delay: "0s", dur: "7s" },
+  { kind: "orange", left: "78%", top: "28%", delay: "0.08s", dur: "6s" },
+  { kind: "kiwi", left: "45%", top: "65%", delay: "0.16s", dur: "8s" },
+  { kind: "ice", left: "62%", top: "72%", delay: "0.22s", dur: "7.5s" },
+  { kind: "orange", left: "22%", top: "58%", delay: "0.1s", dur: "6.5s" },
+  { kind: "kiwi", left: "88%", top: "52%", delay: "0.18s", dur: "9s" },
+  { kind: "ice", left: "35%", top: "35%", delay: "0.28s", dur: "8s" },
+  { kind: "orange", left: "55%", top: "18%", delay: "0.04s", dur: "7s" },
+  { kind: "kiwi", left: "8%", top: "78%", delay: "0.14s", dur: "8.5s" },
+  { kind: "ice", left: "72%", top: "8%", delay: "0.06s", dur: "6.5s", mobileOnly: true },
+  { kind: "orange", left: "4%", top: "40%", delay: "0.12s", dur: "7s", mobileOnly: true },
+  { kind: "kiwi", left: "84%", top: "78%", delay: "0.2s", dur: "8s", mobileOnly: true },
+  { kind: "ice", left: "28%", top: "6%", delay: "0.24s", dur: "7.2s", mobileOnly: true },
+];
+
+function FallbackGarnish({ kind }: { kind: Floater["kind"] }) {
   if (kind === "ice") {
     return (
       <div className="relative h-16 w-[4.5rem] rotate-12">
@@ -87,15 +100,20 @@ export function HeroFallback({ animate = true }: { animate?: boolean }) {
         floaters.map((f, i) => (
           <div
             key={i}
-            className="absolute animate-float opacity-50"
+            className={cn(
+              "garnish-splash absolute",
+              f.mobileOnly && "sm:hidden"
+            )}
             style={{
               left: f.left,
               top: f.top,
-              animationDuration: f.dur,
-              animationDelay: f.delay,
+              animationDelay: `${f.delay}, calc(${f.delay} + 0.55s)`,
+              animationDuration: `0.55s, ${f.dur}`,
             }}
           >
-            <FallbackGarnish kind={f.kind} />
+            <div className="max-sm:scale-125">
+              <FallbackGarnish kind={f.kind} />
+            </div>
           </div>
         ))}
     </div>

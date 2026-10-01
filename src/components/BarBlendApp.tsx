@@ -5,7 +5,7 @@ import { RecipeDetail } from "@/components/ui/RecipeDetail";
 import { ResultsGrid } from "@/components/ui/ResultsGrid";
 import { SearchPanel } from "@/components/ui/SearchPanel";
 import { useCocktailSearch } from "@/hooks/useCocktailSearch";
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence } from "framer-motion";
 
 const HeroSceneClient = dynamic(
   () =>
@@ -25,27 +25,23 @@ export default function BarBlendApp() {
     <div className="relative min-h-screen">
       <HeroSceneClient surprisePulse={search.surprisePulse} />
 
-      <main className="relative z-10 mx-auto max-w-6xl px-4 pb-16 pt-10 sm:px-8 sm:pt-14">
-        <motion.header
-          initial={{ opacity: 0, y: -16 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="mb-10 text-center sm:mb-12"
-        >
-          <p className="mb-3 text-sm font-bold uppercase tracking-[0.2em] text-bar-teal">
+      <main className="relative z-10 mx-auto max-w-6xl px-4 pb-16 pt-16 sm:px-8 sm:pt-14">
+        <header className="mb-10 text-center sm:mb-12">
+          <p className="intro-eyebrow mb-3 text-sm font-bold uppercase tracking-[0.2em] text-bar-teal">
             Welcome to the bar
           </p>
-          <h1 className="font-display text-5xl font-bold leading-tight text-white sm:text-6xl md:text-7xl">
+          <h1 className="intro-title font-display text-6xl font-bold leading-tight tracking-tight text-white sm:text-6xl md:text-7xl">
             <span className="bg-gradient-to-r from-bar-mango via-bar-coral to-bar-pink bg-clip-text text-transparent">
               BarBlend
             </span>{" "}
             Guru
           </h1>
-          <p className="mx-auto mt-4 max-w-md text-lg text-bar-muted sm:text-xl">
+          <p className="intro-tagline mx-auto mt-4 max-w-md text-lg text-bar-muted sm:text-xl">
             Colorful ideas, real recipes — search, explore, or let fate pick your next round.
           </p>
-        </motion.header>
+        </header>
 
-        <div className="mx-auto mb-14 max-w-xl">
+        <div className="intro-panel mx-auto mb-14 max-w-xl">
           <SearchPanel
             query={search.query}
             onQueryChange={search.setQuery}
@@ -62,6 +58,7 @@ export default function BarBlendApp() {
             loading={search.loading}
             catalogLoading={search.catalogLoading}
             error={search.error}
+            rateLimited={search.rateLimited}
             onDismissError={search.clearError}
           />
         </div>
@@ -87,7 +84,7 @@ export default function BarBlendApp() {
           )}
         </AnimatePresence>
 
-        <footer className="mt-16 text-center text-sm text-white/50">
+        <footer className="intro-footer mt-16 text-center text-sm text-white/50">
           Recipes from{" "}
           <a
             href="https://www.thecocktaildb.com"

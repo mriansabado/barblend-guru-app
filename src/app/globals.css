@@ -11,11 +11,14 @@
   --accent-pink: #f472b6;
   --text-primary: #fff8f3;
   --text-muted: #e9d5ff;
+  --field-bg: #fff8f3;
+  --field-text: #2d1848;
 }
 
 @layer base {
   html {
     scroll-behavior: smooth;
+    color-scheme: dark;
   }
 
   body {
@@ -23,6 +26,36 @@
     color: var(--text-primary);
     min-height: 100vh;
     background: var(--bg-plum);
+  }
+
+  /* Opaque cream field + dark text so typed text stays visible even if
+     the OS/browser forces a light native control background. */
+  input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]):not([type="hidden"]),
+  textarea,
+  select {
+    color: var(--field-text);
+    background-color: var(--field-bg);
+    -webkit-text-fill-color: var(--field-text);
+    caret-color: var(--accent-coral);
+    color-scheme: light;
+  }
+
+  input::placeholder,
+  textarea::placeholder {
+    color: #6b4f8a;
+    -webkit-text-fill-color: #6b4f8a;
+    opacity: 1;
+  }
+
+  input:-webkit-autofill,
+  input:-webkit-autofill:hover,
+  input:-webkit-autofill:focus,
+  textarea:-webkit-autofill,
+  select:-webkit-autofill {
+    -webkit-text-fill-color: var(--field-text);
+    caret-color: var(--accent-coral);
+    box-shadow: 0 0 0 1000px var(--field-bg) inset;
+    transition: background-color 9999s ease-out;
   }
 }
 
@@ -67,10 +100,107 @@
       radial-gradient(ellipse 70% 50% at 50% 100%, rgba(45, 212, 191, 0.36), transparent 55%),
       linear-gradient(165deg, var(--bg-plum) 0%, var(--bg-wine) 45%, #553070 100%);
   }
+
+  .garnish-splash {
+    animation-name: garnish-enter, float;
+    animation-timing-function: cubic-bezier(0.34, 1.4, 0.64, 1), ease-in-out;
+    animation-fill-mode: both, none;
+    animation-iteration-count: 1, infinite;
+  }
+}
+
+@keyframes garnish-enter {
+  0% {
+    opacity: 0;
+    transform: scale(0.35) rotate(-14deg);
+  }
+  72% {
+    opacity: 0.7;
+    transform: scale(1.1) rotate(3deg);
+  }
+  100% {
+    opacity: 0.55;
+    transform: scale(1) rotate(0deg);
+  }
+}
+
+@keyframes intro-fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes intro-title-pop {
+  from {
+    opacity: 0;
+    transform: translateY(18px) scale(0.72);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes intro-panel-in {
+  from {
+    opacity: 0;
+    transform: translateY(56px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes intro-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.intro-eyebrow {
+  animation: intro-fade-up 0.7s cubic-bezier(0.22, 1, 0.36, 1) 0.55s both;
+}
+
+.intro-title {
+  animation: intro-title-pop 0.7s cubic-bezier(0.34, 1.45, 0.64, 1) 0.55s both;
+}
+
+.intro-tagline {
+  animation: intro-fade-up 0.5s cubic-bezier(0.22, 1, 0.36, 1) 0.9s both;
+}
+
+.intro-panel {
+  animation: intro-panel-in 0.85s cubic-bezier(0.22, 1, 0.36, 1) 1.35s both;
+}
+
+.intro-footer {
+  animation: intro-fade 0.8s ease 2.2s both;
 }
 
 @media (prefers-reduced-motion: reduce) {
   html {
     scroll-behavior: auto;
+  }
+
+  .garnish-splash {
+    animation: none;
+    opacity: 0.5;
+  }
+
+  .intro-eyebrow,
+  .intro-title,
+  .intro-tagline,
+  .intro-panel,
+  .intro-footer {
+    animation: none;
   }
 }

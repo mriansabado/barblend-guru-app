@@ -24,19 +24,23 @@ export function HeroScene({ surprisePulse }: HeroSceneProps) {
   const [webglOk, setWebglOk] = useState(true);
   const [ready, setReady] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
+  const [veilOn, setVeilOn] = useState(false);
 
   useEffect(() => {
     setWebglOk(supportsWebGL());
     setIsMobile(window.innerWidth < 768);
     const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
     setReducedMotion(mq.matches);
+    setVeilOn(mq.matches);
     const onMotion = () => setReducedMotion(mq.matches);
     mq.addEventListener("change", onMotion);
     const onResize = () => setIsMobile(window.innerWidth < 768);
     window.addEventListener("resize", onResize);
+    const veilTimer = window.setTimeout(() => setVeilOn(true), 800);
     return () => {
       mq.removeEventListener("change", onMotion);
       window.removeEventListener("resize", onResize);
+      window.clearTimeout(veilTimer);
     };
   }, []);
 
@@ -58,7 +62,12 @@ export function HeroScene({ surprisePulse }: HeroSceneProps) {
         }`}
       >
         <Canvas
-          camera={{ position: [0, 0, 2.8], fov: 58, near: 0.1, far: 20 }}
+          camera={{
+            position: [0, 0, isMobile ? 2.05 : 2.8],
+            fov: isMobile ? 64 : 58,
+            near: 0.1,
+            far: 20,
+          }}
           dpr={isMobile ? [1, 1.25] : [1, 1.5]}
           gl={{ antialias: true, alpha: true, powerPreference: "high-performance" }}
           onCreated={({ gl }) => {
@@ -67,11 +76,19 @@ export function HeroScene({ surprisePulse }: HeroSceneProps) {
           }}
         >
           <Suspense fallback={null}>
-            <FunBarScene reducedMotion={reducedMotion} surprisePulse={surprisePulse} />
+            <FunBarScene
+              reducedMotion={reducedMotion}
+              surprisePulse={surprisePulse}
+              isMobile={isMobile}
+            />
           </Suspense>
         </Canvas>
       </div>
-      <div className="readability-veil absolute inset-0" />
+      <div
+        className={`readability-veil absolute inset-0 transition-opacity duration-1000 ${
+          veilOn ? "opacity-100" : "opacity-0"
+        }`}
+      />
     </div>
   );
 }

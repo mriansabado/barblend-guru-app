@@ -20,6 +20,8 @@ const config: Config = {
           teal: "var(--accent-teal)",
           pink: "var(--accent-pink)",
           muted: "var(--text-muted)",
+          field: "#fff8f3",
+          ink: "#2d1848",
         },
       },
       animation: {

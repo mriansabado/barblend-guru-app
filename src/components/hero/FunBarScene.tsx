@@ -4,10 +4,12 @@ import { RoundedBox, Sparkles } from "@react-three/drei";
 import { useFrame } from "@react-three/fiber";
 import { useEffect, useMemo, useRef } from "react";
 import * as THREE from "three";
+import { introElapsedSeconds } from "@/lib/intro";
 
 interface FunBarSceneProps {
   reducedMotion: boolean;
   surprisePulse: number;
+  isMobile?: boolean;
 }
 
 type GarnishKind = "ice" | "orange" | "kiwi";
@@ -20,6 +22,7 @@ interface GarnishParticle {
   drift: THREE.Vector3;
   spin: THREE.Vector3;
   phase: number;
+  introDelay: number;
 }
 
 const KINDS: GarnishKind[] = ["ice", "orange", "kiwi"];
@@ -39,11 +42,18 @@ function scaleForKind(kind: GarnishKind) {
   }
 }
 
+function easeOutBack(k: number) {
+  const c1 = 1.70158;
+  const c3 = c1 + 1;
+  return 1 + c3 * Math.pow(k - 1, 3) + c1 * Math.pow(k - 1, 2);
+}
+
 function createGarnishes(count: number): GarnishParticle[] {
   return Array.from({ length: count }, (_, i) => {
     const kind = KINDS[i % KINDS.length];
     return {
       kind,
+      introDelay: (i / Math.max(count - 1, 1)) * 0.42,
       position: new THREE.Vector3(
         randomInRange(-5, 5),
         randomInRange(-3.5, 3.5),
@@ -81,9 +91,22 @@ function useFloatMotion(
 
   useFrame((state) => {
     const group = ref.current;
-    if (!group || reducedMotion) return;
+    if (!group) return;
 
     const t = state.clock.elapsedTime;
+    const pop = reducedMotion
+      ? 1
+      : easeOutBack(
+          THREE.MathUtils.clamp(
+            (introElapsedSeconds() - particle.introDelay) / 0.38,
+            0,
+            1
+          )
+        );
+    group.scale.setScalar(particle.scale * pop);
+
+    if (reducedMotion) return;
+
     const { drift, spin, phase } = particle;
 
     group.position.x =
@@ -127,7 +150,7 @@ function IceCube({
       ref={ref}
       position={particle.position}
       rotation={particle.rotation}
-      scale={particle.scale}
+      scale={reducedMotion ? particle.scale : 0}
     >
       {/* Main translucent cube */}
       <RoundedBox args={[1.3, 1.08, 1.2]} radius={0.16} smoothness={6}>
@@ -251,7 +274,7 @@ function OrangeSlice({
       ref={ref}
       position={particle.position}
       rotation={particle.rotation}
-      scale={particle.scale}
+      scale={reducedMotion ? particle.scale : 0}
     >
       <mesh>
         <cylinderGeometry args={[0.65, 0.65, 0.18, 48]} />
@@ -329,7 +352,7 @@ function KiwiSlice({
       ref={ref}
       position={particle.position}
       rotation={particle.rotation}
-      scale={particle.scale}
+      scale={reducedMotion ? particle.scale : 0}
     >
       <mesh>
         <cylinderGeometry args={[0.62, 0.62, 0.18, 48]} />
@@ -360,12 +383,12 @@ function FloatingGarnish({
   }
 }
 
-export function FunBarScene({ reducedMotion, surprisePulse }: FunBarSceneProps) {
+export function FunBarScene({ reducedMotion, surprisePulse, isMobile = false }: FunBarSceneProps) {
   const groupRef = useRef<THREE.Group>(null);
   const pointer = useRef({ x: 0, y: 0 });
   const pulseRef = useRef(0);
 
-  const garnishes = useMemo(() => createGarnishes(36), []);
+  const garnishes = useMemo(() => createGarnishes(isMobile ? 28 : 36), [isMobile]);
 
   useEffect(() => {
     pulseRef.current = 1;
