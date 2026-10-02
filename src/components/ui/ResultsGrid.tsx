@@ -3,6 +3,7 @@
 import { Drink, getDrinkIngredients, instructionTeaser } from "@/lib/cocktail-api";
 import { motion } from "framer-motion";
 import { ArrowUpRight } from "lucide-react";
+import { useEffect, useRef } from "react";
 
 interface ResultsGridProps {
   drinks: Drink[];
@@ -28,10 +29,22 @@ export function ResultsGrid({
   onSelect,
   headline,
 }: ResultsGridProps) {
+  const sectionRef = useRef<HTMLElement>(null);
   const visible = showAll ? drinks : drinks.slice(0, INITIAL_VISIBLE);
 
+  useEffect(() => {
+    const node = sectionRef.current;
+    if (!node) return;
+
+    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    node.scrollIntoView({
+      behavior: reduceMotion ? "auto" : "smooth",
+      block: "start",
+    });
+  }, [drinks]);
+
   return (
-    <section className="w-full max-w-6xl">
+    <section ref={sectionRef} id="results" className="w-full max-w-6xl scroll-mt-8">
       <motion.h2
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}

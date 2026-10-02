@@ -16,6 +16,8 @@ export function useBarSplash() {
   }, []);
 
   useEffect(() => {
+    if (entered) return;
+
     const motion = window.matchMedia("(prefers-reduced-motion: reduce)");
     if (motion.matches) {
       setShowTitle(true);
@@ -45,7 +47,7 @@ export function useBarSplash() {
       window.clearTimeout(enterTimer);
       window.removeEventListener("keydown", onKey);
     };
-  }, [enter]);
+  }, [enter, entered]);
 
   return { showTitle, entered, enter, clickGuard };
 }
