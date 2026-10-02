@@ -1,18 +1,26 @@
 /**
  * In-memory limits. Per-instance on Amplify, which is enough to
- * blunt scripts and an Instagram spike without a Redis dependency.
+ * blunt a script or a traffic spike without Redis.
  *
- * Per visitor: 8 actions / 15s, 45 / 10 min — a real mixing session is fine.
- * Whole app → Cocktail DB: 80 origin calls / minute — protects the shared key.
+ * Browsing stays cheap: letter, category, and catalog responses are cached,
+ * so they barely touch Cocktail DB. Search and surprise are not.
+ *
+ * Per visitor, every request: 20 / 15s and 120 / 10 min.
+ *   A full explore (alphabet, searches, a few surprises) fits.
+ *   A tight loop still gets cut in a couple of seconds.
+ * Per visitor, uncached lookups (search + surprise): 18 / minute.
+ * Whole app → Cocktail DB: 60 origin calls / minute.
  */
-const IP_BURST = { windowMs: 15_000, max: 8 } as const;
-const IP_WINDOW = { windowMs: 10 * 60_000, max: 45 } as const;
-const ORIGIN_WINDOW = { windowMs: 60_000, max: 80 } as const;
+const IP_BURST = { windowMs: 15_000, max: 20 } as const;
+const IP_WINDOW = { windowMs: 10 * 60_000, max: 120 } as const;
+const IP_ORIGIN = { windowMs: 60_000, max: 18 } as const;
+const ORIGIN_WINDOW = { windowMs: 60_000, max: 60 } as const;
 
 type HitResult = { ok: true; remaining: number } | { ok: false; retryAfterSec: number };
 
 const burstHits = new Map<string, number[]>();
 const windowHits = new Map<string, number[]>();
+const originByIp = new Map<string, number[]>();
 let originHits: number[] = [];
 let sweeps = 0;
 
@@ -41,19 +49,20 @@ function hitMap(
   return { ok: true, remaining: max - next.length };
 }
 
+function sweepMap(map: Map<string, number[]>, windowMs: number, now: number) {
+  for (const [key, times] of map) {
+    const next = prune(times, windowMs, now);
+    if (next.length) map.set(key, next);
+    else map.delete(key);
+  }
+}
+
 function sweep(now: number) {
   sweeps += 1;
   if (sweeps % 200 !== 0) return;
-  for (const [key, times] of burstHits) {
-    const next = prune(times, IP_BURST.windowMs, now);
-    if (next.length) burstHits.set(key, next);
-    else burstHits.delete(key);
-  }
-  for (const [key, times] of windowHits) {
-    const next = prune(times, IP_WINDOW.windowMs, now);
-    if (next.length) windowHits.set(key, next);
-    else windowHits.delete(key);
-  }
+  sweepMap(burstHits, IP_BURST.windowMs, now);
+  sweepMap(windowHits, IP_WINDOW.windowMs, now);
+  sweepMap(originByIp, IP_ORIGIN.windowMs, now);
 }
 
 export function consumeIpLimit(ip: string): HitResult {
@@ -62,6 +71,13 @@ export function consumeIpLimit(ip: string): HitResult {
   const burst = hitMap(burstHits, ip, IP_BURST.windowMs, IP_BURST.max, now);
   if (!burst.ok) return burst;
   return hitMap(windowHits, ip, IP_WINDOW.windowMs, IP_WINDOW.max, now);
+}
+
+/** Search misses and surprise rolls. Shared menu caches do not count. */
+export function consumePersonalOriginLimit(ip: string): HitResult {
+  const now = Date.now();
+  sweep(now);
+  return hitMap(originByIp, ip, IP_ORIGIN.windowMs, IP_ORIGIN.max, now);
 }
 
 export function consumeOriginLimit(): HitResult {

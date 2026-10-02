@@ -1,4 +1,4 @@
-import { consumeOriginLimit } from "@/lib/rate-limit";
+import { consumeOriginLimit, consumePersonalOriginLimit } from "@/lib/rate-limit";
 import type { Drink } from "@/lib/cocktail-api";
 
 const BASE = "https://www.thecocktaildb.com/api/json/v1/1";
@@ -12,9 +12,12 @@ const ORIGIN_TIMEOUT_MS = 8000;
 
 export class OriginBusyError extends Error {
   retryAfterSec: number;
-  constructor(retryAfterSec: number) {
+  kind: "visitor" | "global";
+  constructor(retryAfterSec: number, kind: "visitor" | "global" = "global") {
     super("origin_busy");
+    this.name = "OriginBusyError";
     this.retryAfterSec = retryAfterSec;
+    this.kind = kind;
   }
 }
 
@@ -42,9 +45,14 @@ function capCache<T>(map: Map<string, CacheEntry<T>>, max = 200) {
   }
 }
 
-async function originGet(path: string): Promise<unknown> {
+async function originGet(path: string, personalIp?: string): Promise<unknown> {
+  if (personalIp) {
+    const personal = consumePersonalOriginLimit(personalIp);
+    if (!personal.ok) throw new OriginBusyError(personal.retryAfterSec, "visitor");
+  }
+
   const allowed = consumeOriginLimit();
-  if (!allowed.ok) throw new OriginBusyError(allowed.retryAfterSec);
+  if (!allowed.ok) throw new OriginBusyError(allowed.retryAfterSec, "global");
 
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), ORIGIN_TIMEOUT_MS);
@@ -69,20 +77,20 @@ function drinksFromPayload(payload: unknown): Drink[] | null {
   return drinks ?? null;
 }
 
-export async function originSearchByName(name: string): Promise<Drink[] | null> {
+export async function originSearchByName(name: string, ip: string): Promise<Drink[] | null> {
   const key = name.trim().toLowerCase();
   const cached = readCache(searchCache.get(key), SEARCH_TTL_MS);
   if (cached !== undefined) return cached;
 
-  const payload = await originGet(`/search.php?s=${encodeURIComponent(name)}`);
+  const payload = await originGet(`/search.php?s=${encodeURIComponent(name)}`, ip);
   const drinks = drinksFromPayload(payload);
   searchCache.set(key, { value: drinks, at: Date.now() });
   capCache(searchCache);
   return drinks;
 }
 
-export async function originRandomDrink(): Promise<Drink | null> {
-  const payload = await originGet("/random.php");
+export async function originRandomDrink(ip: string): Promise<Drink | null> {
+  const payload = await originGet("/random.php", ip);
   const drinks = drinksFromPayload(payload);
   return drinks?.[0] ?? null;
 }

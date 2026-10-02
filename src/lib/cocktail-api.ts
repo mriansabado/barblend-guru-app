@@ -83,11 +83,13 @@ export type IngredientLine = {
 
 export class RateLimitError extends Error {
   retryAfter: number;
+  kind: "visitor" | "global";
 
-  constructor(message: string, retryAfter: number) {
+  constructor(message: string, retryAfter: number, kind: "visitor" | "global" = "visitor") {
     super(message);
     this.name = "RateLimitError";
     this.retryAfter = retryAfter;
+    this.kind = kind;
   }
 }
 
@@ -128,7 +130,8 @@ async function apiGet<T>(params: Record<string, string>): Promise<T> {
   if (response.status === 429 || response.status === 503) {
     throw new RateLimitError(
       payload.message ?? "Easy there, bartender — try again in a moment.",
-      Math.max(1, payload.retryAfter ?? 30)
+      Math.max(1, payload.retryAfter ?? 30),
+      response.status === 503 ? "global" : "visitor"
     );
   }
 
@@ -222,22 +225,6 @@ export async function getDrinkCatalog(): Promise<Drink[]> {
   return catalogPromise;
 }
 
-function ingredientMatchesQuery(ingredient: string, needle: string): boolean {
-  const lower = ingredient.toLowerCase();
-  if (lower === needle || lower.startsWith(`${needle} `)) return true;
-  // Token match so "gin" hits "Dry Gin" but not "Ginger"
-  return lower.split(/[\s,/()-]+/).some((token) => token === needle);
-}
-
-export function filterCatalogByIngredient(catalog: Drink[], ingredient: string): Drink[] {
-  const needle = ingredient.trim().toLowerCase();
-  if (!needle) return [];
-
-  return catalog.filter((drink) =>
-    getDrinkIngredients(drink).some((ing) => ingredientMatchesQuery(ing, needle))
-  );
-}
-
 export function filterCatalogByLetter(catalog: Drink[], letter: string): Drink[] {
   const normalized = letter.trim().toLowerCase().slice(0, 1);
   if (!/[a-z]/.test(normalized)) return [];
@@ -258,9 +245,4 @@ export async function browseByLetter(letter: string): Promise<Drink[]> {
     return filterCatalogByLetter(catalog, normalized);
   }
   return fetchDrinksByLetter(normalized);
-}
-
-export async function searchByIngredient(ingredient: string): Promise<Drink[]> {
-  const catalog = await getDrinkCatalog();
-  return filterCatalogByIngredient(catalog, ingredient);
 }

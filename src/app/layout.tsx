@@ -17,7 +17,7 @@ const nunito = Nunito({
 export const metadata: Metadata = {
   title: "BarBlend Guru | Find your next favorite pour",
   description:
-    "Search cocktails by name or ingredient, or roll the dice for something new. Recipes from The Cocktail DB.",
+    "Search cocktails by name, or roll the dice for something new. Recipes from The Cocktail DB.",
 };
 
 export default function RootLayout({

@@ -2,23 +2,15 @@
 
 import { BarButton } from "@/components/ui/BarButton";
 import { WarmCard } from "@/components/ui/WarmCard";
-import {
-  BROWSE_LETTERS,
-  SPIRIT_CHIPS,
-  SearchType,
-} from "@/hooks/useCocktailSearch";
-import { cn } from "@/lib/cn";
+import { BROWSE_LETTERS } from "@/hooks/useCocktailSearch";
 import { Dices, Search, Sparkles, X } from "lucide-react";
 
 interface SearchPanelProps {
   query: string;
   onQueryChange: (value: string) => void;
-  searchType: SearchType;
-  onSearchTypeChange: (type: SearchType) => void;
   onSearch: () => void;
   onSurprise: () => void;
   onReset: () => void;
-  onSpiritChip: (spirit: string) => void;
   onBrowseLetter: (letter: string) => void;
   onBrowseCategory: (category: string) => void;
   browseCategories: string[];
@@ -34,12 +26,9 @@ export function SearchPanel(props: SearchPanelProps) {
   const {
     query,
     onQueryChange,
-    searchType,
-    onSearchTypeChange,
     onSearch,
     onSurprise,
     onReset,
-    onSpiritChip,
     onBrowseLetter,
     onBrowseCategory,
     browseCategories,
@@ -59,29 +48,6 @@ export function SearchPanel(props: SearchPanelProps) {
         <Sparkles className="h-4 w-4" />
         What are we making tonight?
       </p>
-
-      <div className="mb-5 flex rounded-2xl bg-black/20 p-1">
-        {(
-          [
-            { id: "name" as const, label: "Cocktail name" },
-            { id: "ingredient" as const, label: "What's in the cabinet" },
-          ] as const
-        ).map(({ id, label }) => (
-          <button
-            key={id}
-            type="button"
-            onClick={() => onSearchTypeChange(id)}
-            className={cn(
-              "flex-1 rounded-xl px-2 py-2.5 text-sm font-bold transition-all sm:py-3",
-              searchType === id
-                ? "bg-gradient-to-r from-bar-coral/90 to-bar-pink/90 text-white shadow-md"
-                : "text-bar-muted hover:text-white"
-            )}
-          >
-            {label}
-          </button>
-        ))}
-      </div>
 
       {error && (
         <div
@@ -107,9 +73,7 @@ export function SearchPanel(props: SearchPanelProps) {
           value={query}
           onChange={(e) => onQueryChange(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && !busy && onSearch()}
-          placeholder={
-            searchType === "name" ? "Try Margarita or Negroni…" : "Vodka, lime, mint…"
-          }
+          placeholder="Try Margarita or Negroni…"
           className="w-full rounded-2xl border-2 border-white/25 bg-bar-field py-4 pl-4 pr-11 text-lg text-bar-ink shadow-inner placeholder:text-bar-ink/45 focus:border-bar-teal focus:bg-bar-field focus:outline-none focus:ring-2 focus:ring-bar-teal/40"
         />
         {query && (
@@ -123,27 +87,6 @@ export function SearchPanel(props: SearchPanelProps) {
           </button>
         )}
       </div>
-
-      {searchType === "ingredient" && (
-        <div className="mb-5">
-          <p className="mb-2 text-xs font-bold uppercase tracking-wider text-white/50">
-            Quick spirits
-          </p>
-          <div className="flex flex-wrap gap-2">
-            {SPIRIT_CHIPS.map((spirit) => (
-              <button
-                key={spirit}
-                type="button"
-                disabled={busy}
-                onClick={() => onSpiritChip(spirit)}
-                className="rounded-xl bg-white/10 px-3 py-1.5 text-sm font-semibold text-white transition hover:bg-bar-coral/40 disabled:opacity-50"
-              >
-                {spirit}
-              </button>
-            ))}
-          </div>
-        </div>
-      )}
 
       <div className="flex flex-col gap-3">
         <BarButton type="button" onClick={onSearch} loading={busy}>

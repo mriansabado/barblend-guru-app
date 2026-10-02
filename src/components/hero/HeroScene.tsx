@@ -7,6 +7,7 @@ import { HeroFallback } from "./HeroFallback";
 
 interface HeroSceneProps {
   surprisePulse: number;
+  showVeil?: boolean;
 }
 
 function supportsWebGL(): boolean {
@@ -19,28 +20,24 @@ function supportsWebGL(): boolean {
   }
 }
 
-export function HeroScene({ surprisePulse }: HeroSceneProps) {
+export function HeroScene({ surprisePulse, showVeil = false }: HeroSceneProps) {
   const [reducedMotion, setReducedMotion] = useState(false);
   const [webglOk, setWebglOk] = useState(true);
   const [ready, setReady] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
-  const [veilOn, setVeilOn] = useState(false);
 
   useEffect(() => {
     setWebglOk(supportsWebGL());
     setIsMobile(window.innerWidth < 768);
     const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
     setReducedMotion(mq.matches);
-    setVeilOn(mq.matches);
     const onMotion = () => setReducedMotion(mq.matches);
     mq.addEventListener("change", onMotion);
     const onResize = () => setIsMobile(window.innerWidth < 768);
     window.addEventListener("resize", onResize);
-    const veilTimer = window.setTimeout(() => setVeilOn(true), 800);
     return () => {
       mq.removeEventListener("change", onMotion);
       window.removeEventListener("resize", onResize);
-      window.clearTimeout(veilTimer);
     };
   }, []);
 
@@ -63,7 +60,7 @@ export function HeroScene({ surprisePulse }: HeroSceneProps) {
       >
         <Canvas
           camera={{
-            position: [0, 0, isMobile ? 2.05 : 2.8],
+            position: [0, 0, isMobile ? 1.72 : 2.22],
             fov: isMobile ? 64 : 58,
             near: 0.1,
             far: 20,
@@ -86,7 +83,7 @@ export function HeroScene({ surprisePulse }: HeroSceneProps) {
       </div>
       <div
         className={`readability-veil absolute inset-0 transition-opacity duration-1000 ${
-          veilOn ? "opacity-100" : "opacity-0"
+          showVeil || reducedMotion ? "opacity-100" : "opacity-0"
         }`}
       />
     </div>

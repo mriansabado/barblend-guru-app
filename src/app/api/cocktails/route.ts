@@ -63,12 +63,12 @@ export async function GET(request: NextRequest) {
       if (!q) {
         return NextResponse.json({ error: "missing_query" }, { status: 400 });
       }
-      const drinks = await originSearchByName(q);
+      const drinks = await originSearchByName(q, ip);
       return NextResponse.json({ drinks }, { headers: { "Cache-Control": "private, max-age=60" } });
     }
 
     if (type === "random") {
-      const drink = await originRandomDrink();
+      const drink = await originRandomDrink(ip);
       return NextResponse.json(
         { drink },
         { headers: { "Cache-Control": "no-store" } }
@@ -95,7 +95,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ drinks });
   } catch (error) {
     if (error instanceof OriginBusyError) {
-      return limited(error.retryAfterSec, "global");
+      return limited(error.retryAfterSec, error.kind);
     }
     return NextResponse.json({ error: "upstream" }, { status: 502 });
   }

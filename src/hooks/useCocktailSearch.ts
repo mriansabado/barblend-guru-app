@@ -9,20 +9,9 @@ import {
   filterCatalogByCategory,
   fetchRandomDrink,
   getDrinkCatalog,
-  searchByIngredient,
   searchByName,
 } from "@/lib/cocktail-api";
-
-export type SearchType = "name" | "ingredient";
-
-export const SPIRIT_CHIPS = [
-  "Vodka",
-  "Gin",
-  "Rum",
-  "Tequila",
-  "Whiskey",
-  "Triple Sec",
-] as const;
+import { rateLimitCopy } from "@/lib/rate-limit";
 
 export const BROWSE_LETTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
 
@@ -36,7 +25,6 @@ export const FEATURED_CATEGORIES = [
 
 export function useCocktailSearch() {
   const [query, setQuery] = useState("");
-  const [searchType, setSearchType] = useState<SearchType>("name");
   const [searchResults, setSearchResults] = useState<Drink[]>([]);
   const [selectedDrink, setSelectedDrink] = useState<Drink | null>(null);
   const [hasSearched, setHasSearched] = useState(false);
@@ -45,6 +33,7 @@ export function useCocktailSearch() {
   const [catalogLoading, setCatalogLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [rateLimitedUntil, setRateLimitedUntil] = useState<number | null>(null);
+  const [limitKind, setLimitKind] = useState<"visitor" | "global">("visitor");
   const [surprisePulse, setSurprisePulse] = useState(0);
   const [resultsHeadline, setResultsHeadline] = useState<string | null>(null);
   const [categories, setCategories] = useState<string[]>([]);
@@ -56,6 +45,7 @@ export function useCocktailSearch() {
 
   const fail = useCallback((err: unknown) => {
     if (err instanceof RateLimitError) {
+      setLimitKind(err.kind);
       setRateLimitedUntil(Date.now() + err.retryAfter * 1000);
       setError(err.message);
       return;
@@ -72,16 +62,12 @@ export function useCocktailSearch() {
         setError(null);
         return;
       }
-      setError(
-        wait < 60
-          ? `Easy there, bartender — the tap needs a short rest. Try again in ${wait}s.`
-          : `You've mixed a lot in a short stretch. Come back in about ${Math.ceil(wait / 60)} min.`
-      );
+      setError(rateLimitCopy(wait, limitKind));
     };
     tick();
     const id = window.setInterval(tick, 1000);
     return () => window.clearInterval(id);
-  }, [rateLimitedUntil]);
+  }, [rateLimitedUntil, limitKind]);
 
   useEffect(() => {
     let cancelled = false;
@@ -109,11 +95,7 @@ export function useCocktailSearch() {
   const runSearch = useCallback(async () => {
     const trimmed = query.trim();
     if (!trimmed) {
-      setError(
-        searchType === "name"
-          ? "Type a cocktail name to get started."
-          : "Type an ingredient like Gin or Lime."
-      );
+      setError("Type a cocktail name to get started.");
       return;
     }
 
@@ -124,76 +106,28 @@ export function useCocktailSearch() {
     setResultsHeadline(null);
 
     try {
-      if (searchType === "name") {
-        const drinks = await searchByName(trimmed);
-        if (drinks?.length) {
-          setSearchResults(drinks);
-          setResultsHeadline(`${drinks.length} drinks ready to mix`);
-        } else {
-          const random = await fetchRandomDrink();
-          setSearchResults([]);
-          if (random) {
-            setSelectedDrink(random);
-            setError("No exact match — here's a fun alternative instead.");
-          } else {
-            setError("No match found. Try a different spelling?");
-          }
-        }
+      const drinks = await searchByName(trimmed);
+      if (drinks?.length) {
+        setSearchResults(drinks);
+        setResultsHeadline(`${drinks.length} drinks ready to mix`);
       } else {
-        setCatalogLoading(true);
-        const drinks = await searchByIngredient(trimmed);
-        setCatalogLoading(false);
-        if (drinks.length) {
-          setSearchResults(drinks);
-          setResultsHeadline(
-            `${drinks.length} drinks with ${trimmed}`
-          );
+        const random = await fetchRandomDrink();
+        setSearchResults([]);
+        if (random) {
+          setSelectedDrink(random);
+          setError("No exact match — here's a fun alternative instead.");
         } else {
-          setSearchResults([]);
-          setError("Nothing with that ingredient — try Vodka, Rum, or Mint.");
+          setError("No match found. Try a different spelling?");
         }
       }
       setHasSearched(true);
     } catch (err) {
       fail(err);
       setSearchResults([]);
-      setCatalogLoading(false);
     } finally {
       setLoading(false);
     }
-  }, [query, searchType, fail]);
-
-  const runSpiritChip = useCallback(
-    async (spirit: string) => {
-      setSearchType("ingredient");
-      setQuery(spirit);
-      setLoading(true);
-      setError(null);
-      setSelectedDrink(null);
-      setShowAllResults(false);
-
-      try {
-        setCatalogLoading(true);
-        const drinks = await searchByIngredient(spirit);
-        setCatalogLoading(false);
-        if (drinks.length) {
-          setSearchResults(drinks);
-          setResultsHeadline(`${drinks.length} drinks with ${spirit}`);
-        } else {
-          setSearchResults([]);
-          setError("Nothing with that ingredient — try another spirit.");
-        }
-        setHasSearched(true);
-      } catch (err) {
-        fail(err);
-        setSearchResults([]);
-        setCatalogLoading(false);
-      } finally {
-        setLoading(false);
-      }
-    },
-    [fail]
-  );
+  }, [query, fail]);
 
   const runBrowseLetter = useCallback(async (letter: string) => {
     setLoading(true);
@@ -294,8 +228,6 @@ export function useCocktailSearch() {
   return {
     query,
     setQuery,
-    searchType,
-    setSearchType,
     searchResults,
     selectedDrink,
     hasSearched,
@@ -310,7 +242,6 @@ export function useCocktailSearch() {
     resultsHeadline,
     browseCategories,
     runSearch,
-    runSpiritChip,
     runBrowseLetter,
     runBrowseCategory,
     runSurprise,

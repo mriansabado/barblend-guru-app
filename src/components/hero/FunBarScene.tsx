@@ -53,7 +53,7 @@ function createGarnishes(count: number): GarnishParticle[] {
     const kind = KINDS[i % KINDS.length];
     return {
       kind,
-      introDelay: (i / Math.max(count - 1, 1)) * 0.42,
+      introDelay: 0.18 + (i / Math.max(count - 1, 1)) * 1.05,
       position: new THREE.Vector3(
         randomInRange(-5, 5),
         randomInRange(-3.5, 3.5),
@@ -98,7 +98,7 @@ function useFloatMotion(
       ? 1
       : easeOutBack(
           THREE.MathUtils.clamp(
-            (introElapsedSeconds() - particle.introDelay) / 0.38,
+            (introElapsedSeconds() - particle.introDelay) / 0.52,
             0,
             1
           )
@@ -404,8 +404,16 @@ export function FunBarScene({ reducedMotion, surprisePulse, isMobile = false }: 
     return () => window.removeEventListener("pointermove", onMove);
   }, [reducedMotion]);
 
-  useFrame((_, delta) => {
+  useFrame(({ camera }, delta) => {
     pulseRef.current = Math.max(0, pulseRef.current - delta * 0.6);
+
+    if (!reducedMotion) {
+      const pull = THREE.MathUtils.smoothstep(introElapsedSeconds(), 0.9, 3.6);
+      const startZ = isMobile ? 1.72 : 2.22;
+      const endZ = isMobile ? 2.05 : 2.8;
+      camera.position.z = THREE.MathUtils.lerp(startZ, endZ, pull);
+    }
+
     if (!groupRef.current || reducedMotion) return;
     groupRef.current.rotation.y = THREE.MathUtils.lerp(
       groupRef.current.rotation.y,
