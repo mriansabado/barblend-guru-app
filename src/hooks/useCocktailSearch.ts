@@ -8,6 +8,7 @@ import {
   fetchCategories,
   filterCatalogByCategory,
   fetchRandomDrink,
+  findSimilarDrinks,
   getDrinkCatalog,
   searchByName,
 } from "@/lib/cocktail-api";
@@ -110,15 +111,35 @@ export function useCocktailSearch() {
       if (drinks?.length) {
         setSearchResults(drinks);
         setResultsHeadline(`${drinks.length} drinks ready to mix`);
-      } else {
-        const random = await fetchRandomDrink();
-        setSearchResults([]);
-        if (random) {
-          setSelectedDrink(random);
-          setError("No exact match — here's a fun alternative instead.");
-        } else {
-          setError("No match found. Try a different spelling?");
+        setHasSearched(true);
+        setLoading(false);
+
+        // Enrich single matches with similar drinks after painting the first card.
+        if (drinks.length === 1) {
+          const match = drinks[0];
+          const firstLetter = match.strDrink.trim().charAt(0);
+
+          try {
+            const candidates = await browseByLetter(firstLetter);
+            const similar = findSimilarDrinks(match, candidates);
+            if (similar.length) {
+              setSearchResults([match, ...similar]);
+              setResultsHeadline(`1 match + ${similar.length} similar drinks`);
+            }
+          } catch {
+            // Exact match already shown — similar suggestions are optional.
+          }
         }
+        return;
+      }
+
+      const random = await fetchRandomDrink();
+      setSearchResults([]);
+      if (random) {
+        setSelectedDrink(random);
+        setError("No exact match — here's a fun alternative instead.");
+      } else {
+        setError("No match found. Try a different spelling?");
       }
       setHasSearched(true);
     } catch (err) {

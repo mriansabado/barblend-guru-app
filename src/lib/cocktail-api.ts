@@ -108,6 +108,44 @@ export function getDrinkIngredientLines(drink: Drink): IngredientLine[] {
   });
 }
 
+export function findSimilarDrinks(
+  drink: Drink,
+  candidates: Drink[],
+  limit = 5
+): Drink[] {
+  const ingredients = new Set(
+    getDrinkIngredients(drink).map((ingredient) => ingredient.trim().toLowerCase())
+  );
+  const category = drink.strCategory?.trim().toLowerCase();
+  const alcoholic = drink.strAlcoholic?.trim().toLowerCase();
+  const glass = drink.strGlass?.trim().toLowerCase();
+
+  return candidates
+    .filter((candidate) => candidate.idDrink !== drink.idDrink)
+    .map((candidate) => {
+      const sharedIngredients = getDrinkIngredients(candidate).filter((ingredient) =>
+        ingredients.has(ingredient.trim().toLowerCase())
+      ).length;
+      const score =
+        sharedIngredients * 3 +
+        (category && candidate.strCategory?.trim().toLowerCase() === category ? 4 : 0) +
+        (alcoholic && candidate.strAlcoholic?.trim().toLowerCase() === alcoholic ? 1 : 0) +
+        (glass && candidate.strGlass?.trim().toLowerCase() === glass ? 1 : 0);
+
+      return { candidate, score };
+    })
+    .filter(({ score }) => score > 0)
+    .sort(
+      (a, b) =>
+        b.score - a.score ||
+        a.candidate.strDrink.localeCompare(b.candidate.strDrink, undefined, {
+          sensitivity: "base",
+        })
+    )
+    .slice(0, limit)
+    .map(({ candidate }) => candidate);
+}
+
 export function instructionTeaser(text: string | null | undefined, max = 90): string | null {
   if (!text?.trim()) return null;
   const cleaned = text.trim().replace(/\s+/g, " ");

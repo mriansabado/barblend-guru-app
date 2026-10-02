@@ -53,7 +53,7 @@ export function ResultsGrid({
         {headline ?? `${drinks.length} drinks ready to mix`}
       </motion.h2>
       <div
-        className="grid gap-6"
+        className={`grid gap-6 ${visible.length === 1 ? "mx-auto max-w-sm" : ""}`}
         style={{ gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))" }}
       >
         {visible.map((drink, index) => {
