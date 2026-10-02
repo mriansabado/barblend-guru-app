@@ -50,11 +50,11 @@ function hitMap(
 }
 
 function sweepMap(map: Map<string, number[]>, windowMs: number, now: number) {
-  for (const [key, times] of map) {
+  map.forEach((times, key) => {
     const next = prune(times, windowMs, now);
     if (next.length) map.set(key, next);
     else map.delete(key);
-  }
+  });
 }
 
 function sweep(now: number) {

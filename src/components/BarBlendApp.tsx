@@ -118,12 +118,9 @@ export default function BarBlendApp() {
               <SearchPanel
                 query={search.query}
                 onQueryChange={search.setQuery}
-                searchType={search.searchType}
-                onSearchTypeChange={search.setSearchType}
                 onSearch={search.runSearch}
                 onSurprise={search.runSurprise}
                 onReset={search.reset}
-                onSpiritChip={search.runSpiritChip}
                 onBrowseLetter={search.runBrowseLetter}
                 onBrowseCategory={search.runBrowseCategory}
                 browseCategories={search.browseCategories}
